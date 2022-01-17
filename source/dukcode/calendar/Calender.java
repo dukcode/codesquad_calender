@@ -1,17 +1,41 @@
 package dukcode.calendar;
 
 import java.util.Date;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Scanner;
+import java.io.FileNotFoundException;
 
 class Calendar {
     private static final int[] MAX_DAYS = {0, 31, 28, 31, 30, 31, 30, 31, 30, 31, 30, 31, 30};
     private static final int[] LEAP_MAX_DAYS = {0, 31, 29, 31, 30, 31, 30, 31, 30, 31, 30, 31, 30};
+    private static final String SAVE_FILE = "savefile.dat";
 
-    private HashMap<Date, String> planMap;
+    private HashMap<Date, PlanItem> planMap;
 
     public Calendar() {
-        planMap = new HashMap<Date, String>();
+        planMap = new HashMap<Date, PlanItem>();
+        File f = new File(SAVE_FILE);
+        if (!f.exists()) {
+            System.err.println("NO SAVE FILE");
+            return;
+        }
+        try {
+            Scanner s = new Scanner(f);
+            while (s.hasNext()) {
+                String line = s.nextLine();
+                String[] words = line.split(",");
+                String date = words[0];
+                String detail = words[1].replaceAll("\"", "");
+                PlanItem p = new PlanItem(date, detail);
+                planMap.put(p.getDate(), p);
+            }
+            s.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean isLeapYear(int year) {
@@ -29,18 +53,26 @@ class Calendar {
         }
     }
 
-    public String searchPlan(String strDate) throws Exception {
-        Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strDate);
-        String plan = planMap.get(date);
-        return plan;
+    public PlanItem searchPlan(String strDate) {
+        Date date = PlanItem.getDateFromString(strDate);
+        return planMap.get(date);
     }
 
 
     // @param date ex : "2022-01-17"
     // @param plan
-    public void registerPlan(String strDate, String plan) throws Exception{
-        Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strDate);
-        planMap.put(date, plan);
+    public void registerPlan(String strDate, String plan) {
+        PlanItem p = new PlanItem(strDate, plan);
+        planMap.put(p.getDate(), p);
+
+        File f = new File(SAVE_FILE);
+        String item = p.saveString();
+        try {
+            FileWriter fw = new FileWriter(f, true);
+            fw.write(item);
+            fw.close();
+        } catch (IOException e) {
+        }
     }
 
     private int getWeekDay(int year, int month, int day) {
@@ -89,7 +121,7 @@ class Calendar {
     }
 
     // Simple test code here
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) {
         Calendar cal = new Calendar();
         System.out.println(cal.getWeekDay(1970, 1, 1) == 4);
         System.out.println(cal.getWeekDay(1971, 1, 1) == 5);
