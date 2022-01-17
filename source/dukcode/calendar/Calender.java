@@ -1,8 +1,18 @@
-package dukcode.calender;
+package dukcode.calendar;
 
-class Calender {
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+
+class Calendar {
     private static final int[] MAX_DAYS = {0, 31, 28, 31, 30, 31, 30, 31, 30, 31, 30, 31, 30};
     private static final int[] LEAP_MAX_DAYS = {0, 31, 29, 31, 30, 31, 30, 31, 30, 31, 30, 31, 30};
+
+    private HashMap<Date, String> planMap;
+
+    public Calendar() {
+        planMap = new HashMap<Date, String>();
+    }
 
     public boolean isLeapYear(int year) {
         if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {
@@ -17,6 +27,20 @@ class Calender {
         } else {
         return MAX_DAYS[month];
         }
+    }
+
+    public String searchPlan(String strDate) throws Exception {
+        Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strDate);
+        String plan = planMap.get(date);
+        return plan;
+    }
+
+
+    // @param date ex : "2022-01-17"
+    // @param plan
+    public void registerPlan(String strDate, String plan) throws Exception{
+        Date date = new SimpleDateFormat("yyyy-MM-dd").parse(strDate);
+        planMap.put(date, plan);
     }
 
     private int getWeekDay(int year, int month, int day) {
@@ -65,13 +89,16 @@ class Calender {
     }
 
     // Simple test code here
-    public static void main(String[] args) {
-        Calender cal = new Calender();
-        System.out.println(cal.getWeekDay(1970, 1, 1) == 3);
-        System.out.println(cal.getWeekDay(1971, 1, 1) == 4);
-        System.out.println(cal.getWeekDay(1972, 1, 1) == 5);
-        System.out.println(cal.getWeekDay(1973, 1, 1) == 0);
-        System.out.println(cal.getWeekDay(1974, 1, 1) == 1);
+    public static void main(String[] args) throws Exception{
+        Calendar cal = new Calendar();
+        System.out.println(cal.getWeekDay(1970, 1, 1) == 4);
+        System.out.println(cal.getWeekDay(1971, 1, 1) == 5);
+        System.out.println(cal.getWeekDay(1972, 1, 1) == 6);
+        System.out.println(cal.getWeekDay(1973, 1, 1) == 1);
+        System.out.println(cal.getWeekDay(1974, 1, 1) == 2);
+
+        cal.registerPlan("2022-01-17", "Let's eat beef!");
+        System.out.println(cal.searchPlan("2022-01-17").equals("Let's eat beef!"));
     }
 
 }
